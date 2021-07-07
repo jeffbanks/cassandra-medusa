@@ -10,6 +10,12 @@ service Medusa {
     rpc GetBackups(GetBackupsRequest) returns (GetBackupsResponse);
 }
 
+enum BackupStatusType {
+    IN_PROGRESS = 0;
+    SUCCESS = 1;
+    FAILED = 2;
+}
+
 message BackupRequest {
     string name = 1;
     enum Mode {
@@ -20,7 +26,8 @@ message BackupRequest {
 }
 
 message BackupResponse {
-
+    string backupName = 1;
+    BackupStatusType status = 2;
 }
 
 message BackupStatusRequest {
@@ -33,6 +40,7 @@ message BackupStatusResponse {
     repeated string missingNodes = 3;
     string startTime = 4;
     string finishTime = 5;
+    BackupStatusType status = 6;
 }
 
 message DeleteBackupRequest {

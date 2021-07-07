@@ -403,9 +403,9 @@ class Storage(object):
         return last_finished
 
     def get_cluster_backup(self, backup_name):
-        for cluster_backup in self.list_cluster_backups():
-            if cluster_backup.name == backup_name:
-                return cluster_backup
+        for cb in self.list_cluster_backups():
+            if cb.name == backup_name:
+                return cb
         raise KeyError('The backup {} does not exist'.format(backup_name))
 
     def remove_backup_from_index(self, node_backup):

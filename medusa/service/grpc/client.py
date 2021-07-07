@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import grpc
+import logging
 from grpc_health.v1 import health_pb2
 from grpc_health.v1 import health_pb2_grpc
 

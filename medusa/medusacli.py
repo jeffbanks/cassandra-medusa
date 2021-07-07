@@ -127,8 +127,11 @@ def backup(medusaconfig, backup_name, stagger, enable_md5_checks, mode):
     Backup single Cassandra node
     """
     stagger_time = datetime.timedelta(seconds=stagger) if stagger else None
-    medusa.backup_node.main(medusaconfig, backup_name, stagger_time, enable_md5_checks, mode)
+    f = medusa.backup_node.handle_backup(medusaconfig, backup_name, stagger_time, enable_md5_checks, mode)
+    if f:
+        return f.result()
 
+    print("Unable the handle backup request")
 
 @cli.command(name='backup-cluster')
 @click.option('--backup-name', help='Backup name of the backup, defaults to current datetime (formatted "%Y%m%dT%H%M")')
