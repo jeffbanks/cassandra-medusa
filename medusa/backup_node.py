@@ -160,23 +160,25 @@ class BackupMan:
         if not BackupMan.__instance or backup_id not in BackupMan.__instance.__backups:
             return False
 
-        f = BackupMan.__instance.__backups.pop([backup_id])
-        if asyncio.isfuture(f):
-            f.cancel("Cancelling backup for id: {} with done state: {}".format(backup_id, f.done()))
+        backup_future = BackupMan.__instance.__backups.pop([backup_id])
+        if asyncio.isfuture(backup_future):
+            backup_future.cancel("Cancelling backup for id: {} with done state: {}"
+                                 .format(backup_id, backup_future.done()))
         logging.debug("Backup removed for id: {}".format(backup_id))
         return True
 
     @staticmethod
     def cleanup_all_backups():
         for backup_id in BackupMan.__instance.__backups:
-            f = BackupMan.__instance.__backups.pop([backup_id])
-            if asyncio.isfuture(f):
-                f.cancel("Cleanup of all backups requested. Cancelling backup for id: {} with "
-                         "done state: {}".format(backup_id, f.done()))
+            backup_future = BackupMan.__instance.__backups.pop([backup_id])
+            if asyncio.isfuture(backup_future):
+                logging.debug("Cancelling backup id: {}".format(backup_id))
+                backup_future.cancel("Cleanup of all backups requested. Cancelling backup for id: {} with "
+                                     "done state: {}".format(backup_id, backup_future.done()))
 
         BackupMan.__instance.__backups = None
         BackupMan.__instance = None
-        logging.debug("Cleanup of all backups completed.")
+        logging.debug("Cleanup of all backups registered completed.")
 
 
 def throttle_backup():
@@ -233,6 +235,9 @@ def handle_backup_status(backup_name):
         return None, None
 
 
+def handle_backup_removal(backup_name):
+    BackupMan.remove_backup(backup_name)
+
 # Kicks off the node backup unit of work and registers for backup queries.
 # No return value, throws back exception for failed kickoff.
 def handle_backup(config, backup_name_arg, stagger_time, enable_md5_checks_flag, mode):
@@ -241,7 +246,6 @@ def handle_backup(config, backup_name_arg, stagger_time, enable_md5_checks_flag,
     monitoring = Monitoring(config=config.monitoring)
 
     try:
-
         storage = Storage(config=config.storage)
         cassandra = Cassandra(config)
 
@@ -274,7 +278,6 @@ def handle_backup(config, backup_name_arg, stagger_time, enable_md5_checks_flag,
 
 
 # Used as target of thread execution.
-#
 def start_backup(storage, node_backup, cassandra, differential_mode, stagger_time, start, mode,
                  enable_md5_checks_flag, backup_name, config, monitoring):
     try:
@@ -321,7 +324,7 @@ def start_backup(storage, node_backup, cassandra, differential_mode, stagger_tim
                 "start_time": start}
         backup_future.set_result(info)
     else:
-        raise RuntimeError("start_backup failure to locate backup future for id: {}".format(backup_name))
+        raise RuntimeError("start_backup failed to locate an expected existing future for id: {}".format(backup_name))
 
 
 # Wait 2^i * 10 seconds between each retry, up to 2 minutes between attempts, which is right after the
