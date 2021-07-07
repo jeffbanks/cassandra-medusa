@@ -238,6 +238,7 @@ def handle_backup_status(backup_name):
 def handle_backup_removal(backup_name):
     BackupMan.remove_backup(backup_name)
 
+
 # Kicks off the node backup unit of work and registers for backup queries.
 # No return value, throws back exception for failed kickoff.
 def handle_backup(config, backup_name_arg, stagger_time, enable_md5_checks_flag, mode):

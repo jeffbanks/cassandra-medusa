@@ -29,6 +29,7 @@ import sys
 # Need to get rid of the annoying pssh warning about paramiko
 if not sys.warnoptions:
     import warnings
+
     warnings.simplefilter("ignore")
 
 from collections import defaultdict
@@ -47,7 +48,6 @@ import medusa.restore_node
 import medusa.status
 import medusa.verify
 import medusa.fetch_tokenmap
-
 
 pass_MedusaConfig = click.make_pass_decorator(medusa.config.MedusaConfig)
 
@@ -132,6 +132,7 @@ def backup(medusaconfig, backup_name, stagger, enable_md5_checks, mode):
         return f.result()
 
     print("Unable the handle backup request")
+
 
 @cli.command(name='backup-cluster')
 @click.option('--backup-name', help='Backup name of the backup, defaults to current datetime (formatted "%Y%m%dT%H%M")')

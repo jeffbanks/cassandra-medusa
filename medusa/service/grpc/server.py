@@ -12,11 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import asyncio
 import logging
 import signal
 import sys
-import threading
 from collections import defaultdict
 from concurrent import futures
 from datetime import datetime
@@ -67,7 +65,6 @@ class MedusaService(medusa_pb2_grpc.MedusaServicer):
             backup = self.storage.get_cluster_backup(request.backupName)
 
             status, result = medusa.backup_node.handle_backup_status(request.backupName)
-
 
             # TODO how is the startTime determined?
             response.startTime = datetime.fromtimestamp(backup.started).strftime(TIMESTAMP_FORMAT)
