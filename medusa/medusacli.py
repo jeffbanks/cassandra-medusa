@@ -17,6 +17,7 @@
 from gevent import monkey
 
 import medusa.utils
+from medusa import backup_node
 
 monkey.patch_all()
 import datetime
@@ -127,11 +128,7 @@ def backup(medusaconfig, backup_name, stagger, enable_md5_checks, mode):
     Backup single Cassandra node
     """
     stagger_time = datetime.timedelta(seconds=stagger) if stagger else None
-    f = medusa.backup_node.handle_backup(medusaconfig, backup_name, stagger_time, enable_md5_checks, mode)
-    if f:
-        return f.result()
-
-    print("Unable the handle backup request")
+    return backup_node.handle_backup(medusaconfig, backup_name, stagger_time, enable_md5_checks, mode)
 
 
 @cli.command(name='backup-cluster')

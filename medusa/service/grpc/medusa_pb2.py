@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     syntax='proto3',
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
-    serialized_pb=b'\n\x0cmedusa.proto\"d\n\rBackupRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12!\n\x04mode\x18\x02 \x01(\x0e\x32\x13.BackupRequest.Mode\"\"\n\x04Mode\x12\x10\n\x0c\x44IFFERENTIAL\x10\x00\x12\x08\n\x04\x46ULL\x10\x01\"G\n\x0e\x42\x61\x63kupResponse\x12\x12\n\nbackupName\x18\x01 \x01(\t\x12!\n\x06status\x18\x02 \x01(\x0e\x32\x11.BackupStatusType\")\n\x13\x42\x61\x63kupStatusRequest\x12\x12\n\nbackupName\x18\x01 \x01(\t\"\xa6\x01\n\x14\x42\x61\x63kupStatusResponse\x12\x15\n\rfinishedNodes\x18\x01 \x03(\t\x12\x17\n\x0funfinishedNodes\x18\x02 \x03(\t\x12\x14\n\x0cmissingNodes\x18\x03 \x03(\t\x12\x11\n\tstartTime\x18\x04 \x01(\t\x12\x12\n\nfinishTime\x18\x05 \x01(\t\x12!\n\x06status\x18\x06 \x01(\x0e\x32\x11.BackupStatusType\"#\n\x13\x44\x65leteBackupRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x16\n\x14\x44\x65leteBackupResponse\"\x13\n\x11GetBackupsRequest\"5\n\x12GetBackupsResponse\x12\x1f\n\x07\x62\x61\x63kups\x18\x01 \x03(\x0b\x32\x0e.BackupSummary\"\x91\x01\n\rBackupSummary\x12\x12\n\nbackupName\x18\x01 \x01(\t\x12\x11\n\tstartTime\x18\x02 \x01(\x03\x12\x12\n\nfinishTime\x18\x03 \x01(\x03\x12\x12\n\ntotalNodes\x18\x04 \x01(\x05\x12\x15\n\rfinishedNodes\x18\x05 \x01(\x05\x12\x1a\n\x05nodes\x18\x06 \x03(\x0b\x32\x0b.BackupNode\"L\n\nBackupNode\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0e\n\x06tokens\x18\x02 \x03(\x03\x12\x12\n\ndatacenter\x18\x03 \x01(\t\x12\x0c\n\x04rack\x18\x04 \x01(\t*<\n\x10\x42\x61\x63kupStatusType\x12\x0f\n\x0bIN_PROGRESS\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\n\n\x06\x46\x41ILED\x10\x02\x32\xe4\x01\n\x06Medusa\x12)\n\x06\x42\x61\x63kup\x12\x0e.BackupRequest\x1a\x0f.BackupResponse\x12;\n\x0c\x42\x61\x63kupStatus\x12\x14.BackupStatusRequest\x1a\x15.BackupStatusResponse\x12;\n\x0c\x44\x65leteBackup\x12\x14.DeleteBackupRequest\x1a\x15.DeleteBackupResponse\x12\x35\n\nGetBackups\x12\x12.GetBackupsRequest\x1a\x13.GetBackupsResponseb\x06proto3'
+    serialized_pb=b'\n\x0cmedusa.proto\"d\n\rBackupRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12!\n\x04mode\x18\x02 \x01(\x0e\x32\x13.BackupRequest.Mode\"\"\n\x04Mode\x12\x10\n\x0c\x44IFFERENTIAL\x10\x00\x12\x08\n\x04\x46ULL\x10\x01\"G\n\x0e\x42\x61\x63kupResponse\x12\x12\n\nbackupName\x18\x01 \x01(\t\x12!\n\x06status\x18\x02 \x01(\x0e\x32\x11.BackupStatusType\")\n\x13\x42\x61\x63kupStatusRequest\x12\x12\n\nbackupName\x18\x01 \x01(\t\"\xa6\x01\n\x14\x42\x61\x63kupStatusResponse\x12\x15\n\rfinishedNodes\x18\x01 \x03(\t\x12\x17\n\x0funfinishedNodes\x18\x02 \x03(\t\x12\x14\n\x0cmissingNodes\x18\x03 \x03(\t\x12\x11\n\tstartTime\x18\x04 \x01(\t\x12\x12\n\nfinishTime\x18\x05 \x01(\t\x12!\n\x06status\x18\x06 \x01(\x0e\x32\x11.BackupStatusType\"#\n\x13\x44\x65leteBackupRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x16\n\x14\x44\x65leteBackupResponse\"\x13\n\x11GetBackupsRequest\"5\n\x12GetBackupsResponse\x12\x1f\n\x07\x62\x61\x63kups\x18\x01 \x03(\x0b\x32\x0e.BackupSummary\"\xb4\x01\n\rBackupSummary\x12\x12\n\nbackupName\x18\x01 \x01(\t\x12\x11\n\tstartTime\x18\x02 \x01(\x03\x12\x12\n\nfinishTime\x18\x03 \x01(\x03\x12\x12\n\ntotalNodes\x18\x04 \x01(\x05\x12\x15\n\rfinishedNodes\x18\x05 \x01(\x05\x12\x1a\n\x05nodes\x18\x06 \x03(\x0b\x32\x0b.BackupNode\x12!\n\x06status\x18\x07 \x01(\x0e\x32\x11.BackupStatusType\"L\n\nBackupNode\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0e\n\x06tokens\x18\x02 \x03(\x03\x12\x12\n\ndatacenter\x18\x03 \x01(\t\x12\x0c\n\x04rack\x18\x04 \x01(\t*<\n\x10\x42\x61\x63kupStatusType\x12\x0f\n\x0bIN_PROGRESS\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\n\n\x06\x46\x41ILED\x10\x02\x32\xe4\x01\n\x06Medusa\x12)\n\x06\x42\x61\x63kup\x12\x0e.BackupRequest\x1a\x0f.BackupResponse\x12;\n\x0c\x42\x61\x63kupStatus\x12\x14.BackupStatusRequest\x1a\x15.BackupStatusResponse\x12;\n\x0c\x44\x65leteBackup\x12\x14.DeleteBackupRequest\x1a\x15.DeleteBackupResponse\x12\x35\n\nGetBackups\x12\x12.GetBackupsRequest\x1a\x13.GetBackupsResponseb\x06proto3'
 )
 
 _BACKUPSTATUSTYPE = _descriptor.EnumDescriptor(
@@ -46,8 +46,8 @@ _BACKUPSTATUSTYPE = _descriptor.EnumDescriptor(
     ],
     containing_type=None,
     serialized_options=None,
-    serialized_start=766,
-    serialized_end=826,
+    serialized_start=801,
+    serialized_end=861,
 )
 _sym_db.RegisterEnumDescriptor(_BACKUPSTATUSTYPE)
 
@@ -415,6 +415,13 @@ _BACKUPSUMMARY = _descriptor.Descriptor(
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR, create_key=_descriptor._internal_create_key),
+        _descriptor.FieldDescriptor(
+            name='status', full_name='BackupSummary.status', index=6,
+            number=7, type=14, cpp_type=8, label=1,
+            has_default_value=False, default_value=0,
+            message_type=None, enum_type=None, containing_type=None,
+            is_extension=False, extension_scope=None,
+            serialized_options=None, file=DESCRIPTOR, create_key=_descriptor._internal_create_key),
     ],
     extensions=[
     ],
@@ -428,7 +435,7 @@ _BACKUPSUMMARY = _descriptor.Descriptor(
     oneofs=[
     ],
     serialized_start=541,
-    serialized_end=686,
+    serialized_end=721,
 )
 
 _BACKUPNODE = _descriptor.Descriptor(
@@ -479,8 +486,8 @@ _BACKUPNODE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=688,
-    serialized_end=764,
+    serialized_start=723,
+    serialized_end=799,
 )
 
 _BACKUPREQUEST.fields_by_name['mode'].enum_type = _BACKUPREQUEST_MODE
@@ -489,6 +496,7 @@ _BACKUPRESPONSE.fields_by_name['status'].enum_type = _BACKUPSTATUSTYPE
 _BACKUPSTATUSRESPONSE.fields_by_name['status'].enum_type = _BACKUPSTATUSTYPE
 _GETBACKUPSRESPONSE.fields_by_name['backups'].message_type = _BACKUPSUMMARY
 _BACKUPSUMMARY.fields_by_name['nodes'].message_type = _BACKUPNODE
+_BACKUPSUMMARY.fields_by_name['status'].enum_type = _BACKUPSTATUSTYPE
 DESCRIPTOR.message_types_by_name['BackupRequest'] = _BACKUPREQUEST
 DESCRIPTOR.message_types_by_name['BackupResponse'] = _BACKUPRESPONSE
 DESCRIPTOR.message_types_by_name['BackupStatusRequest'] = _BACKUPSTATUSREQUEST
@@ -579,8 +587,8 @@ _MEDUSA = _descriptor.ServiceDescriptor(
     index=0,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
-    serialized_start=829,
-    serialized_end=1057,
+    serialized_start=864,
+    serialized_end=1092,
     methods=[
         _descriptor.MethodDescriptor(
             name='Backup',

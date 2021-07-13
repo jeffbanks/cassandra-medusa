@@ -21,7 +21,6 @@ import pathlib
 import threading
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor
 
 import psutil
 from libcloud.storage.providers import Provider
@@ -125,6 +124,7 @@ class BackupMan:
     FAILED = 2
 
     __instance = None
+    __backups = {}
 
     def __init__(self):
         if BackupMan.__instance:
@@ -135,12 +135,19 @@ class BackupMan:
             BackupMan.__backups = {}
 
     @staticmethod
+    def is_active():
+        return BackupMan.__instance is not None
+
+    @staticmethod
     def set_backup(backup_id, future):
-        if not backup_id:
-            raise RuntimeError('No backup identifier supplied.')
+        if not backup_id or not future:
+            raise RuntimeError('No backup identifier and/or future supplied.')
 
         if not BackupMan.__instance:
             BackupMan()
+
+        if backup_id in BackupMan.__instance.__backups:
+            raise RuntimeError('Unable to set as a backup already exists with id: {}'.format(backup_id))
 
         BackupMan.__instance.__backups[backup_id] = future
         logging.debug("Completed registration of backup id {}".format(backup_id))
@@ -160,24 +167,26 @@ class BackupMan:
         if not BackupMan.__instance or backup_id not in BackupMan.__instance.__backups:
             return False
 
-        backup_future = BackupMan.__instance.__backups.pop([backup_id])
+        backup_future = BackupMan.__instance.__backups.pop(backup_id)
         if asyncio.isfuture(backup_future):
             backup_future.cancel("Cancelling backup for id: {} with done state: {}"
                                  .format(backup_id, backup_future.done()))
         logging.debug("Backup removed for id: {}".format(backup_id))
         return True
 
+    # Includes visibility of backup current state while being cleaned.
     @staticmethod
     def cleanup_all_backups():
-        for backup_id in BackupMan.__instance.__backups:
-            backup_future = BackupMan.__instance.__backups.pop([backup_id])
-            if asyncio.isfuture(backup_future):
-                logging.debug("Cancelling backup id: {}".format(backup_id))
-                backup_future.cancel("Cleanup of all backups requested. Cancelling backup for id: {} with "
-                                     "done state: {}".format(backup_id, backup_future.done()))
-
-        BackupMan.__instance.__backups = None
-        BackupMan.__instance = None
+        if BackupMan.__instance:
+            for backup_id in list(BackupMan.__instance.__backups):
+                backup_future = BackupMan.__instance.__backups[backup_id]
+                if asyncio.isfuture(backup_future):
+                    logging.debug("Cancelling backup` id: {}".format(backup_id))
+                    backup_future.cancel("Cleanup of all backups requested. Cancelling backup for id: {} with "
+                                         "done state: {}".format(backup_id, backup_future.done()))
+                del BackupMan.__instance.__backups[backup_id]
+            BackupMan.__instance.__backups = None
+            BackupMan.__instance = None
         logging.debug("Cleanup of all backups registered completed.")
 
 
@@ -219,34 +228,15 @@ def stagger(fqdn, storage, tokenmap):
     return has_backup
 
 
-# Returns the status of a registered backup along with set result if done.
-# Returns None if not found.
-def handle_backup_status(backup_name):
-    backup_future = BackupMan.get_backup_future(backup_name)
-    if backup_future and asyncio.isfuture(backup_future):
-        if backup_future.done() and not backup_future.cancelled():
-            result = backup_future.result()
-            return BackupMan.SUCCESS, result
-        elif not backup_future.done() and not backup_future.cancelled():
-            return BackupMan.IN_PROGRESS, None
-        else:
-            return BackupMan.FAILED, None
-    else:
-        return None, None
-
-
-def handle_backup_removal(backup_name):
-    BackupMan.remove_backup(backup_name)
-
-
 # Kicks off the node backup unit of work and registers for backup queries.
 # No return value, throws back exception for failed kickoff.
 def handle_backup(config, backup_name_arg, stagger_time, enable_md5_checks_flag, mode):
     start = datetime.datetime.now()
-    backup_name = str(backup_name_arg) or start.strftime('%Y%m%d%H%M')
+    backup_name = backup_name_arg or start.strftime('%Y%m%d%H%M')
     monitoring = Monitoring(config=config.monitoring)
 
     try:
+        logging.info("Inside handle_backup")
         storage = Storage(config=config.storage)
         cassandra = Cassandra(config)
 
@@ -254,6 +244,7 @@ def handle_backup(config, backup_name_arg, stagger_time, enable_md5_checks_flag,
         if mode == "differential":
             differential_mode = True
 
+        logging.debug("Calling get_node_backup")
         node_backup = storage.get_node_backup(
             fqdn=config.storage.fqdn,
             name=backup_name,
@@ -262,13 +253,28 @@ def handle_backup(config, backup_name_arg, stagger_time, enable_md5_checks_flag,
         if node_backup.exists():
             raise IOError('Error: Backup {} already exists'.format(backup_name))
 
-        with ThreadPoolExecutor(max_workers=1, thread_name_prefix=backup_name) as executor:
-            backup_future = executor.submit(start_backup, storage, node_backup, cassandra, differential_mode,
-                                            stagger_time,
-                                            start, mode, bool(enable_md5_checks_flag), backup_name, config, monitoring)
-            BackupMan.set_backup(backup_name, backup_future)
+        logging.info("Calling start_backup")
+        info = start_backup(storage, node_backup, cassandra, differential_mode, stagger_time, start, mode,
+                            enable_md5_checks_flag, backup_name, config, monitoring)
+
+        # Result may get returned directly back to caller, or packed in future result.
+        if BackupMan.is_active():
+            logging.debug("Aysnc mode active")
+            backup_future = BackupMan.get_backup_future(backup_name)
+            if backup_future:
+                backup_future.set_result(info)
+            else:
+                raise RuntimeError("start_backup failed to locate an expected existing future for id: {}"
+                                   .format(backup_name))
+        else:
+            logging.debug("Aysnc mode is not active, returing payload to caller")
+            # Direct return to caller of the results after synchronous activities completed above.
+            return (info["actual_backup_duration"], info["actual_start_time"], info["end_time"],
+                    info["node_backup"], info["node_backup_cache"], info["num_files"],
+                    info["start_time"])
 
     except Exception as e:
+        logging.error("Issue occurred inside handle_backup for {} as: {}".format(backup_name, str(e)))
         tags = ['medusa-node-backup', 'backup-error', backup_name]
         monitoring.send(tags, 1)
         medusa.utils.handle_exception(
@@ -278,7 +284,6 @@ def handle_backup(config, backup_name_arg, stagger_time, enable_md5_checks_flag,
         )
 
 
-# Used as target of thread execution.
 def start_backup(storage, node_backup, cassandra, differential_mode, stagger_time, start, mode,
                  enable_md5_checks_flag, backup_name, config, monitoring):
     try:
@@ -316,16 +321,17 @@ def start_backup(storage, node_backup, cassandra, differential_mode, stagger_tim
 
     actual_backup_duration = end - actual_start
     print_backup_stats(actual_backup_duration, actual_start, end, node_backup, node_backup_cache, num_files, start)
-    update_monitoring(actual_backup_duration, backup_name, monitoring, node_backup)
 
-    backup_future = BackupMan.get_backup_future(backup_name)
-    if backup_future and asyncio.isfuture(backup_future):
-        info = {"actual_backup_duration": actual_backup_duration, "actual_start_time": actual_start, "end_time": end,
-                "node_backup": node_backup, "node_backup_cache": node_backup_cache, "num_files": num_files,
-                "start_time": start}
-        backup_future.set_result(info)
-    else:
-        raise RuntimeError("start_backup failed to locate an expected existing future for id: {}".format(backup_name))
+    update_monitoring(actual_backup_duration, backup_name, monitoring, node_backup)
+    return {
+        "actual_backup_duration": actual_backup_duration,
+        "actual_start_time": actual_start,
+        "end_time": end,
+        "node_backup": node_backup,
+        "node_backup_cache": node_backup_cache,
+        "num_files": num_files,
+        "start_time": start
+    }
 
 
 # Wait 2^i * 10 seconds between each retry, up to 2 minutes between attempts, which is right after the
